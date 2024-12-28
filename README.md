@@ -1,1 +1,0 @@
-# polygon-collision-gui
