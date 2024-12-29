@@ -174,13 +174,22 @@ public class AVLTree<T extends Comparable<T>> {
         return node;
     }
 
-    // Get the minimum node in the tree
     public Node<T> getMin(Node<T> node) {
         if(node == null)
             return null;
 
         while (node.getLeft() != null) {
             node = node.getLeft();
+        }
+        return node;
+    }
+
+    public Node<T> getMax(Node<T> node) {
+        if(node == null)
+            return null;
+
+        while (node.getRight() != null) {
+            node = node.getRight();
         }
         return node;
     }

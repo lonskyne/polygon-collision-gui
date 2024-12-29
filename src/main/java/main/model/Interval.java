@@ -1,5 +1,7 @@
 package main.model;
 
+import main.SolutionDriver;
+
 public class Interval implements Comparable<Interval> {
     private double begY, endY;
     private Line line;
@@ -33,58 +35,52 @@ public class Interval implements Comparable<Interval> {
         return -1;
     }
 
+
     @Override
-    public int compareTo(Interval o) {
-        if (this == o)
-            return 0;
+    public int compareTo(Interval other) {
+        if (this == other) return 0;
 
-        int res1 = 1;
-        int res0 = -1;
+        final double EPSILON = 0.00001;
+        int resultForSmaller = -1;
+        int resultForLarger = 1;
 
-//        if (this.projection == Projection.LEFT){
-//            res1 = -1;
-//            res0 = 1;
-//        }
-
-        if (contains(o.getBegY()) == 0){
-            double x = line.getIntersectedX(o.getBegY());
-            double deviation = x - o.getLine().getTopx();
-            if (deviation < -0.001)
-                return res1;
-
-            if (deviation > 0.001)
-                return res0;
+        if (SolutionDriver.getInstance().isCalculatingLeft()) {
+            resultForSmaller = 1;
+            resultForLarger = -1;
         }
-        if (contains(o.getEndY()) == 0){
-            double x = line.getIntersectedX(o.getEndY());
-            double deviation = x - o.getLine().getBotx();
-            if (deviation < -0.001)
-                return res1;
 
-            if (deviation > 0.001)
-                return res0;
+        if (contains(other.getBegY()) == 0) {
+            double intersectX = line.getIntersectedX(other.getBegY());
+            double deviation = intersectX - other.getLine().getTopx();
+            if (deviation < -EPSILON) return resultForSmaller;
+            if (deviation > EPSILON) return resultForLarger;
         }
-        if (o.contains(getBegY()) == 0){
-            double x = o.getLine().getIntersectedX(getBegY());
-            double deviation = x - getLine().getTopx();
-            if (deviation < -0.001)
-                return res0;
 
-            if (deviation > 0.001)
-                return res1;
+        if (contains(other.getEndY()) == 0) {
+            double intersectX = line.getIntersectedX(other.getEndY());
+            double deviation = intersectX - other.getLine().getBotx();
+            if (deviation < -EPSILON) return resultForSmaller;
+            if (deviation > EPSILON) return resultForLarger;
         }
-        if (o.contains(getEndY()) == 0){
-            double x = o.getLine().getIntersectedX(getEndY());
-            double deviation = x - getLine().getBotx();
-            if (deviation < -0.001)
-                return res0;
 
-            if (deviation > 0.001)
-                return res1;
+        if (other.contains(getBegY()) == 0) {
+            double intersectX = other.getLine().getIntersectedX(getBegY());
+            double deviation = intersectX - getLine().getTopx();
+            if (deviation < -EPSILON) return resultForLarger;
+            if (deviation > EPSILON) return resultForSmaller;
         }
-        if (this.getEndY() - o.getEndY() > 0.01 )
-            return res0;
 
-        return 1;
+        if (other.contains(getEndY()) == 0) {
+            double intersectX = other.getLine().getIntersectedX(getEndY());
+            double deviation = intersectX - getLine().getBotx();
+            if (deviation < -EPSILON) return resultForLarger;
+            if (deviation > EPSILON) return resultForSmaller;
+        }
+
+        if (this.getEndY() - other.getEndY() > EPSILON)
+            return resultForLarger;
+
+        return resultForSmaller;
     }
+
 }

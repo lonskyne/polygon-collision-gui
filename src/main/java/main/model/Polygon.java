@@ -16,12 +16,17 @@ public class Polygon extends MyObservable {
     private final List<MyPoint2D> points = new ArrayList<>();
     private final List<Line> lines = new ArrayList<>();
     private boolean finished = false;
-
-    private MyPoint2D sweepLine = null;
-    List<Interval> statusIntervals = new ArrayList<>();
     AVLTree<Interval> tree = new AVLTree<>();
 
+    // Drawing
+    private MyPoint2D sweepLine = null;
+    List<Interval> statusIntervals = new ArrayList<>();
     private final List<Interval> visible = new ArrayList<>();
+
+    private MyPoint2D currentPointCheck = null;
+    private MyPoint2D bSearchL = null, bSearchR = null;
+    private Line currentDistance = null;
+    private Line minLine = null;
 
     public void addPoint(double x, double y) {
         if(points.isEmpty()) {
@@ -55,24 +60,28 @@ public class Polygon extends MyObservable {
         notify("addPoint called");
     }
 
+    private Line2D getLineFromInterval(Interval interval) {
+        double x1 = interval.getLine().getBegPoint().getX(), y1 = interval.getLine().getBegPoint().getY();
+        double x2 = interval.getLine().getEndPoint().getX(), y2 = interval.getLine().getEndPoint().getY();
+        double ya = interval.getBegY(), yb = interval.getEndY();
+        double m = (y2 - y1) / (x2 - x1);
+
+        double xa = (ya - y1) / m + x1;
+        double xb = (yb - y1) / m + x1;
+
+        return new Line2D.Double(xa, ya, xb, yb);
+    }
+
     public void paint(Graphics2D g) {
+        g.setStroke(new BasicStroke(3));
         g.setPaint(new GradientPaint(0, 0, Color.BLACK, 100, 0, Color.BLACK));
 
         for(Line line : lines)
             g.draw(new Line2D.Double(line.getBegPoint().getX(), line.getBegPoint().getY(), line.getEndPoint().getX(), line.getEndPoint().getY()));
 
         g.setPaint(new GradientPaint(0, 0, Color.RED, 100, 0, Color.RED));
-        for(Interval interval : visible) {
-            double x1 = interval.getLine().getBegPoint().getX(), y1 = interval.getLine().getBegPoint().getY();
-            double x2 = interval.getLine().getEndPoint().getX(), y2 = interval.getLine().getEndPoint().getY();
-            double ya = interval.getBegY(), yb = interval.getEndY();
-            double m = (y2 - y1) / (x2 - x1);
-
-            double xa = (ya - y1) / m + x1;
-            double xb = (yb - y1) / m + x1;
-
-            g.draw(new Line2D.Double(xa, ya, xb, yb));
-        }
+        for(Interval interval : visible)
+            g.draw(getLineFromInterval(interval));
 
         g.setPaint(new GradientPaint(0, 0, Color.BLUE, 100, 0, Color.BLUE));
 
@@ -83,20 +92,33 @@ public class Polygon extends MyObservable {
 
         g.setPaint(new GradientPaint(0, 0, Color.GREEN, 100, 0, Color.GREEN));
 
-        for(Interval interval : statusIntervals) {
-            double x1 = interval.getLine().getBegPoint().getX(), y1 = interval.getLine().getBegPoint().getY();
-            double x2 = interval.getLine().getEndPoint().getX(), y2 = interval.getLine().getEndPoint().getY();
-            double ya = interval.getBegY(), yb = interval.getEndY();
-            double m = (y2 - y1) / (x2 - x1);
+        for(Interval interval : statusIntervals)
+            g.draw(getLineFromInterval(interval));
 
-            double xa = (ya - y1) / m + x1;
-            double xb = (yb - y1) / m + x1;
+        g.setPaint(new GradientPaint(0, 0, Color.CYAN, 100, 0, Color.CYAN));
 
-            g.draw(new Line2D.Double(xa, ya, xb, yb));
+        if(currentPointCheck != null)
+            g.fillRect((int) currentPointCheck.getX() - 5, (int) currentPointCheck.getY() - 5, 10, 10);
+
+        g.setPaint(new GradientPaint(0, 0, Color.ORANGE, 100, 0, Color.ORANGE));
+
+        if(bSearchL != null && bSearchR != null) {
+            g.fillRect((int) bSearchL.getX() - 5, (int) bSearchL.getY() - 5, 10, 10);
+            g.fillRect((int) bSearchR.getX() - 5, (int) bSearchR.getY() - 5, 10, 10);
+        }
+
+        if(currentDistance != null)
+            g.draw(new Line2D.Double(currentDistance.getBegPoint().getX(), currentDistance.getBegPoint().getY(), currentDistance.getEndPoint().getX(), currentDistance.getEndPoint().getY()));
+
+        g.setPaint(new GradientPaint(0, 0, Color.MAGENTA, 100, 0, Color.MAGENTA));
+
+        if(minLine != null) {
+            g.fillRoundRect((int)minLine.getBegPoint().getX() - 5, (int)minLine.getBegPoint().getY() - 5, 10, 10, 5, 5);
+            g.fillRoundRect((int)minLine.getEndPoint().getX() - 5, (int)minLine.getEndPoint().getY() - 5, 10, 10, 5, 5);
         }
     }
 
-    public List<Interval> getVisible(boolean fromLeft) {
+    public List<Interval> getVisible() {
         visible.clear();
         Collections.sort(points);
 
@@ -115,7 +137,7 @@ public class Polygon extends MyObservable {
             if(!visible.isEmpty())
                 prevLine = visible.getLast().getLine();
 
-            double EPSILON = 0.000001;
+            double EPSILON = 0.00001;
 
             if (minLine == prevLine && minLine != null)
                 visible.getLast().setEndY(point.getY());
@@ -147,7 +169,6 @@ public class Polygon extends MyObservable {
             notify("Polygon change 1");
         }
 
-        minLine = null;
         sweepLine = null;
 
         notify("Polygon change 2");
@@ -157,5 +178,34 @@ public class Polygon extends MyObservable {
 
     public boolean isFinished() {
         return finished;
+    }
+
+    public List<MyPoint2D> getPoints() {
+        return points;
+    }
+
+    public void setCurrentPointCheck(MyPoint2D currentPointCheck) {
+        this.currentPointCheck = currentPointCheck;
+        notify("Changed point check.");
+    }
+
+    public void setbSearchL(MyPoint2D bSearchL) {
+        this.bSearchL = bSearchL;
+        notify("Changed bsearch l.");
+    }
+
+    public void setbSearchR(MyPoint2D bSearchR) {
+        this.bSearchR = bSearchR;
+        notify("Changed bsearch r.");
+    }
+
+    public void setCurrentDistance(Line currentDistance) {
+        this.currentDistance = currentDistance;
+        notify("Set current distance.");
+    }
+
+    public void setMinLine(Line minLine) {
+        this.minLine = minLine;
+        notify("Set min line.");
     }
 }
