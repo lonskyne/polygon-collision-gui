@@ -16,6 +16,8 @@ public class SolutionDriver {
     private Polygon lPoly, rPoly;
     private boolean calculatingLeft = true;
 
+    Line minLine = null;
+
     public static SolutionDriver getInstance() {
         if(instance == null)
             instance = new SolutionDriver();
@@ -36,16 +38,19 @@ public class SolutionDriver {
         Line lrMinLine = findClosestCollision(lPoly, rPoly, rpVisible);
         Line rlMinLine = findClosestCollision(rPoly, lPoly, lpVisible);
 
-        Line minLine = lrMinLine;
-        lPoly.setMinLine(minLine);
+        minLine = lrMinLine;
+        lPoly.setMinPoint(minLine.getBegPoint());
+        rPoly.setMinPoint(minLine.getEndPoint());
 
         if(Math.abs(rlMinLine.getBegPoint().getX() - rlMinLine.getEndPoint().getX()) < Math.abs(lrMinLine.getBegPoint().getX() - lrMinLine.getEndPoint().getX())) {
             minLine = rlMinLine;
-            lPoly.setMinLine(null);
-            rPoly.setMinLine(minLine);
+            lPoly.setMinPoint(minLine.getEndPoint());
+            rPoly.setMinPoint(minLine.getBegPoint());
         }
+    }
 
-        //lPoly.moveLeft();
+    public void move() {
+        lPoly.moveRight(Math.abs(minLine.getBegPoint().getX() - minLine.getEndPoint().getX()));
     }
 
     private Line findClosestCollision(Polygon poly, Polygon otherPoly, List<Interval> otherVisible) {

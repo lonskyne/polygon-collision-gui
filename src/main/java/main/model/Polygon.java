@@ -26,7 +26,8 @@ public class Polygon extends MyObservable {
     private MyPoint2D currentPointCheck = null;
     private MyPoint2D bSearchL = null, bSearchR = null;
     private Line currentDistance = null;
-    private Line minLine = null;
+    private MyPoint2D minPoint = null;
+    private double moveDistance = 0;
 
     public void addPoint(double x, double y) {
         if(points.isEmpty()) {
@@ -73,6 +74,8 @@ public class Polygon extends MyObservable {
     }
 
     public void paint(Graphics2D g) {
+        g.translate(moveDistance, 0);
+
         g.setStroke(new BasicStroke(3));
         g.setPaint(new GradientPaint(0, 0, Color.BLACK, 100, 0, Color.BLACK));
 
@@ -112,10 +115,10 @@ public class Polygon extends MyObservable {
 
         g.setPaint(new GradientPaint(0, 0, Color.MAGENTA, 100, 0, Color.MAGENTA));
 
-        if(minLine != null) {
-            g.fillRoundRect((int)minLine.getBegPoint().getX() - 5, (int)minLine.getBegPoint().getY() - 5, 10, 10, 5, 5);
-            g.fillRoundRect((int)minLine.getEndPoint().getX() - 5, (int)minLine.getEndPoint().getY() - 5, 10, 10, 5, 5);
-        }
+        if(minPoint != null)
+            g.fillRoundRect((int)minPoint.getX() - 5, (int)minPoint.getY() - 5, 10, 10, 5, 5);
+
+        g.translate(-moveDistance, 0);
     }
 
     public List<Interval> getVisible() {
@@ -176,6 +179,13 @@ public class Polygon extends MyObservable {
         return visible;
     }
 
+    public void moveRight(double d) {
+        while(moveDistance < d) {
+            moveDistance += 0.00001;
+            notify("Updated movement");
+        }
+    }
+
     public boolean isFinished() {
         return finished;
     }
@@ -204,8 +214,17 @@ public class Polygon extends MyObservable {
         notify("Set current distance.");
     }
 
-    public void setMinLine(Line minLine) {
-        this.minLine = minLine;
+    public void setMinPoint(MyPoint2D minPoint) {
+        this.minPoint = minPoint;
         notify("Set min line.");
+    }
+
+    public void setMoveDistance(int moveDistance) {
+        this.moveDistance = moveDistance;
+        notify("Set move distance.");
+    }
+
+    public MyPoint2D getMinPoint() {
+        return minPoint;
     }
 }

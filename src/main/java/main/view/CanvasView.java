@@ -52,6 +52,7 @@ public class CanvasView extends JPanel implements MyListener {
     @Override
     public void update(String message) {
         MainView.getInstance().getToolbar().getStart().setEnabled(lPoly.isFinished() && rPoly.isFinished());
+        MainView.getInstance().getToolbar().getMove().setEnabled(lPoly.getMinPoint() != null && rPoly.getMinPoint() != null);
         repaint();
     }
 

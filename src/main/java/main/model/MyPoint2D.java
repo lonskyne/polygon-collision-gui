@@ -1,7 +1,7 @@
 package main.model;
 
 public class MyPoint2D implements Comparable<MyPoint2D> {
-    private final double x, y;
+    private double x, y;
     private Line line;
 
     public MyPoint2D(double x, double y) {
@@ -29,6 +29,10 @@ public class MyPoint2D implements Comparable<MyPoint2D> {
 
     public double getX() {
         return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
     }
 
     public double getY() {
