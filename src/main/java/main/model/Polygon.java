@@ -18,6 +18,12 @@ public class Polygon extends MyObservable {
     private boolean finished = false;
     AVLTree<Interval> tree = new AVLTree<>();
 
+    private String pointString = "";
+
+    public String getPointString() {
+        return pointString;
+    }
+
     // Drawing
     private MyPoint2D sweepLine = null;
     List<Interval> statusIntervals = new ArrayList<>();
@@ -30,6 +36,10 @@ public class Polygon extends MyObservable {
     private double moveDistance = 0;
 
     public void addPoint(double x, double y) {
+        if(!pointString.isEmpty())
+            pointString += "\n";
+        pointString += x + ", " + y;
+
         if(points.isEmpty()) {
             points.add(new MyPoint2D(x, y));
             return;

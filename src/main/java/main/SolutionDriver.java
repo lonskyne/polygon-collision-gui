@@ -6,7 +6,6 @@ import main.model.MyPoint2D;
 import main.model.Polygon;
 import main.view.CanvasView;
 
-import java.awt.geom.Line2D;
 import java.util.List;
 
 public class SolutionDriver {
@@ -38,11 +37,13 @@ public class SolutionDriver {
         Line lrMinLine = findClosestCollision(lPoly, rPoly, rpVisible);
         Line rlMinLine = findClosestCollision(rPoly, lPoly, lpVisible);
 
-        minLine = lrMinLine;
-        lPoly.setMinPoint(minLine.getBegPoint());
-        rPoly.setMinPoint(minLine.getEndPoint());
+        if(lrMinLine != null) {
+            minLine = lrMinLine;
+            lPoly.setMinPoint(minLine.getBegPoint());
+            rPoly.setMinPoint(minLine.getEndPoint());
+        }
 
-        if(Math.abs(rlMinLine.getBegPoint().getX() - rlMinLine.getEndPoint().getX()) < Math.abs(lrMinLine.getBegPoint().getX() - lrMinLine.getEndPoint().getX())) {
+        if((lrMinLine == null && rlMinLine != null) || (rlMinLine != null && Math.abs(rlMinLine.getBegPoint().getX() - rlMinLine.getEndPoint().getX()) < Math.abs(lrMinLine.getBegPoint().getX() - lrMinLine.getEndPoint().getX()))) {
             minLine = rlMinLine;
             lPoly.setMinPoint(minLine.getEndPoint());
             rPoly.setMinPoint(minLine.getBegPoint());
